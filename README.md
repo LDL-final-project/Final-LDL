@@ -7,13 +7,13 @@
   - fix: *verb* *noun* 
 
 
-拉下來
-git pull
+### 拉下來
+- git pull
 
-追蹤檔案
-git add .
-git commit -m "asddddddasda"
-git status  //check 
-git pull
-git push
+### 追蹤檔案
+- git add .
+- git commit -m "asddddddasda"
+- git status  //check 
+- git pull
+- git push
 
