@@ -151,7 +151,7 @@ module keyboard (
   output reg [3:0] color_id
 	);
 	
-	parameter [8:0] KEY_CODES [0:11] = {
+	parameter [8:0] KEY_CODES [0:12] = {
 		9'b0_0010_1101,	// R => 2D
 		9'b0_0010_1100,	// T => 2C
 		9'b0_0011_0101,	// Y => 35
@@ -163,10 +163,12 @@ module keyboard (
 		9'b0_0010_1010,	// V => 2A
 		9'b0_0011_0001,	// B => 31
 		9'b0_0011_0010, // N => 32
-		9'b0_0011_1010 // M => 3A
+		9'b0_0011_1010, // M => 3A
+		9'b0_0101_1010
 	};
 	
   reg [4:0] nx_color_id;
+	reg check;
 	wire [511:0] key_down;
 	wire [8:0] last_change;
 	wire been_ready;
@@ -185,9 +187,12 @@ module keyboard (
 	always @ (posedge clk, posedge rst) begin
 		if (rst) begin
 			color_id <= 4'b1100;
+			check = 1'b0;
 		end else begin
 			color_id <= color_id;
 			if (been_ready && key_down[last_change] == 1'b1) begin
+				if (last_change == KEY_CODES[12] && nx_color_id != 4'b1100) 
+					check = 1'b1;
 				color_id <= nx_color_id;
 			end
 		end
@@ -207,6 +212,7 @@ module keyboard (
 			KEY_CODES[09] : nx_color_id = 4'b1001;
 			KEY_CODES[10] : nx_color_id = 4'b1010;
 			KEY_CODES[11] : nx_color_id = 4'b1011;
+			KEY_CODES[12] : nx_color_id = nx_color_id;
 			default		  : nx_color_id = 4'b1100;
 		endcase
 	end
