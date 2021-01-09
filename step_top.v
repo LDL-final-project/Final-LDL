@@ -9,7 +9,7 @@ module pmod_step_interface(
     
     wire new_clk;
     
-    clock_divider #(.n(20)) clock_div(
+    clock_divider #(.n(19)) clock_div(
         .clk(clk),
         .clk_div(new_clk)
         );
