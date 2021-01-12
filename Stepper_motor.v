@@ -1,240 +1,275 @@
-//module Stepper_motor(
-//    input clk,
-//    input rst,
-//    input dir,
-//    input en,
-//    output reg [3:0] signal
-//    );
-    
-//    parameter sig4 = 3'b001;
-//    parameter sig3 = 3'b011;
-//    parameter sig2 = 3'b010;
-//    parameter sig1 = 3'b110;
-//    parameter sig0 = 3'b000;
-    
-//    reg [2:0] present_state, next_state;
-    
-//    always @ (posedge clk, posedge rst) begin
-//        if (rst == 1'b1)
-//            present_state = sig0;
-//        else 
-//            present_state = next_state;
-//    end
-    
-//    always @ (posedge clk) begin
-//        if (present_state == sig4) begin
-//            if (dir == 1'b0)
-//                signal = 4'b1000;
-//            else
-//                signal = 4'b1000;
-//        end else if (present_state == sig3) begin
-//            if (dir == 1'b0)
-//                signal = 4'b0100;
-//            else
-//                signal = 4'b0100;
-//        end else if (present_state == sig2) begin
-//            if (dir == 1'b0)
-//                signal = 4'b0010;
-//            else
-//                signal = 4'b0010;
-//        end else if (present_state == sig1) begin 
-//            if (dir == 1'b0)
-//                signal = 4'b0001;
-//            else
-//                signal = 4'b0001;
-//        end else
-//            signal = 4'b0000;
-//    end
-    
-//    always @* begin
-//        case(present_state)
-//            sig4: begin
-//                if (dir == 1'b0 && en == 1'b1)
-//                    next_state = sig3;
-//                else if (dir == 1'b1 && en == 1'b1)
-//                    next_state = sig1;
-//                else 
-//                    next_state = sig0;
-//            end  
-//            sig3: begin
-//                if (dir == 1'b0&& en == 1'b1)
-//                    next_state = sig2;
-//                else if (dir == 1'b1 && en == 1'b1)
-//                    next_state = sig4;
-//                else 
-//                    next_state = sig0;
-//            end
-//            sig2: begin
-//                if (dir == 1'b0&& en == 1'b1)
-//                    next_state = sig1;
-//                else if (dir == 1'b1 && en == 1'b1)
-//                    next_state = sig3;
-//                else 
-//                    next_state = sig0;
-//            end 
-//            sig1: begin
-//                if (dir == 1'b0&& en == 1'b1)
-//                    next_state = sig4;
-//                else if (dir == 1'b1 && en == 1'b1)
-//                    next_state = sig2;
-//                else 
-//                    next_state = sig0;
-//            end
-//            sig0: begin
-//                if (en == 1'b1)
-//                    next_state = sig1;
-//                else 
-//                    next_state = sig0;
-//            end
-//            default:
-//                next_state = sig0; 
-//        endcase
-//    end
-//endmodule
-`timescale 1ns / 1ps
+module box(
+    input clk,
+    input rst,
+    input color_id,
+    output [3:0] red,
+    output [3:0] yellow,
+    output [3:0] blue,
+    output location_0,
+    output location_1,
+    output location_2
+);
 
-//////////////////////////////////////////////////////////////////////////////////
-// Company: Digilent    
-// Engineer: Kaitlyn Franz
-// 
-// Create Date: 01/23/2016 03:44:35 PM
-// Design Name: Claw
-// Module Name: pmod_step_driver
-// Project Name: Claw_game
-// Target Devices: Basys3
-// Tool Versions: 2015.4
-// Description: This is the state machine that drives
-// the output to the PmodSTEP. It alternates one of four pins being
-// high at a rate set by the clock divider. 
-// 
-// Dependencies: 
-// 
-// Revision: 1
-// Revision 0.01 - File Created
-// Additional Comments: 
-// 
-//////////////////////////////////////////////////////////////////////////////////
+    wire r_depth, r_stay;
+    wire y_depth, y_stay;
+    wire b_depth, b_stay;
+    reg r, y, b;
+    reg next_r_depth, next_r_stay;
+    reg next_y_depth, next_y_stay;
+    reg next_b_depth, next_b_stay;
+    
+    assign r_depth = next_r_depth;
+    assign y_depth = next_y_depth;
+    assign b_depth = next_b_depth;
+    assign r_stay = next_r_stay;
+    assign y_stay = next_y_stay;
+    assign b_stay = next_b_stay;
+    
+    always@(posedge clk) begin
+        case(color_id)
+            4'd0: begin
+                next_r_depth <= 10'd5;
+                next_y_depth <= 10'd5;
+                next_b_depth <= 10'd5;
+            end
+            4'd1: begin
+                next_r_depth <= 10'd10;
+                next_y_depth <= 10'd5;
+                next_b_depth <= 10'd5;
+            end
+            4'd2: begin
+                next_r_depth <= 10'd5;
+                next_y_depth <= 10'd10;
+                next_b_depth <= 10'd5;
+            end
+            4'd3: begin
+                next_r_depth <= 10'd5;
+                next_y_depth <= 10'd5;
+                next_b_depth <= 10'd10;
+            end
+            4'd4: begin
+                next_r_depth <= 10'd10;
+                next_y_depth <= 10'd10;
+                next_b_depth <= 10'd5;
+            end
+            4'd5: begin
+                next_r_depth <= 10'd5;
+                next_y_depth <= 10'd10;
+                next_b_depth <= 10'd10;
+            end
+            4'd6: begin
+                next_r_depth <= 10'd10;
+                next_y_depth <= 10'd5;
+                next_b_depth <= 10'd10;
+            end
+            4'd7: begin
+                next_r_depth <= 10'd15;
+                next_y_depth <= 10'd10;
+                next_b_depth <= 10'd5;
+            end
+            4'd8: begin
+                next_r_depth <= 10'd15;
+                next_y_depth <= 10'd5;
+                next_b_depth <= 10'd10;
+            end
+            4'd9: begin
+                next_r_depth <= 10'd10;
+                next_y_depth <= 10'd15;
+                next_b_depth <= 10'd5;
+            end
+            4'd10: begin
+                next_r_depth <= 10'd5;
+                next_y_depth <= 10'd15;
+                next_b_depth <= 10'd10;
+            end
+            4'd11: begin
+                next_r_depth <= 10'd10;
+                next_y_depth <= 10'd5;
+                next_b_depth <= 10'd15;
+            end
+            default: begin
+            
+            end
+        endcase
+    end
+    always@(posedge clk) begin
+        case(color_id)
+            4'd0: begin
+                next_r_stay <= 10'd5;
+                next_y_stay <= 10'd5;
+                next_b_stay <= 10'd5;
+            end
+            4'd1: begin
+                next_r_stay <= 10'd10;
+                next_y_stay <= 10'd5;
+                next_b_stay <= 10'd5;
+            end
+            4'd2: begin
+                next_r_stay <= 10'd5;
+                next_y_stay <= 10'd10;
+                next_b_stay <= 10'd5;
+            end
+            4'd3: begin
+                next_r_stay <= 10'd5;
+                next_y_stay <= 10'd5;
+                next_b_stay <= 10'd10;
+            end
+            4'd4: begin
+                next_r_stay <= 10'd10;
+                next_y_stay <= 10'd10;
+                next_b_stay <= 10'd5;
+            end
+            4'd5: begin
+                next_r_stay <= 10'd5;
+                next_y_stay <= 10'd10;
+                next_b_stay <= 10'd10;
+            end
+            4'd6: begin
+                next_r_stay <= 10'd10;
+                next_y_stay <= 10'd5;
+                next_b_stay <= 10'd10;
+            end
+            4'd7: begin
+                next_r_stay <= 10'd15;
+                next_y_stay <= 10'd10;
+                next_b_stay <= 10'd5;
+            end
+            4'd8: begin
+                next_r_stay <= 10'd15;
+                next_y_stay <= 10'd5;
+                next_b_stay <= 10'd10;
+            end
+            4'd9: begin
+                next_r_stay <= 10'd10;
+                next_y_stay <= 10'd15;
+                next_b_stay <= 10'd5;
+            end
+            4'd10: begin
+                next_r_stay <= 10'd5;
+                next_y_stay <= 10'd15;
+                next_b_stay <= 10'd10;
+            end
+            4'd11: begin
+                next_r_stay <= 10'd10;
+                next_y_stay <= 10'd5;
+                next_b_stay <= 10'd15;
+            end
+            default: begin
+            
+            end
+        endcase
+    end
+    
+    stepper_motor motorr(
+        .clk(clk),
+        .rst(rst),
+        . _wait(0),
+        .sec(r_stay),
+        .depth(r_depth),
+        .signal_out(red)
+    );
+    stepper_motor motory(
+        .clk(clk),
+        .rst(rst),
+        . _wait(r_depth + r_stay + r_depth),
+        .sec(y_stay),
+        .depth(y_depth),
+        .signal_out(yellow)
+    );
+    stepper_motor motorb(
+        .clk(clk),
+        .rst(rst),
+        . _wait(r_depth + r_stay + r_depth),
+        .sec(b_stay),
+        .depth(b_depth),
+        .signal_out(blue)
+    );
+endmodule
 
-module pmod_step_driver(
+module stepper_motor(
+    input clk,
+    input rst,
+    input _wait,
+    input sec,
+    input depth,
+    output [3:0] signal_out
+);
+    
+    wire clk_22;
+    wire _en, _dir;
+    reg [31:0] count, next_count;
+    reg en, dir;
+    
+    clock_divider #(.n(22)) clock_div( .clk(clk), .clk_div(clk_22));
+    
+    assign _en = en;
+    assign _dir = _dir;
+    
+    always@(posedge clk, posedge rst) begin
+        if(rst)
+            count <= 32'b0;
+        else
+            count <= next_count;
+    end
+    
+    always@* begin
+        next_count = count + 1'b1;
+    end
+    
+    always@* begin
+        if(count < _wait)
+            en = 1'b0;
+        else if(count > _wait && count < _wait + depth)
+            en = 1'b1;
+        else if(count > _wait + depth && count < _wait + depth + sec)
+            en = 1'b0;
+        else if(count > _wait + depth + sec && count < _wait + depth + sec + depth)
+            en = 1'b1;
+        else
+            en = 1'b0;
+    end
+    
+    always@* begin
+        if(count < _wait + depth + (sec>>1))
+            dir = 1'b0;
+        else
+            dir = 1'b1;
+    end
+    
+    Stepper_motor control(
+        .clk(clk_22),
+        .rst(rst),
+        .dir(_dir),
+        .en(_en),        
+        .signal(signal_out)
+        );    
+    
+endmodule
+
+module stepper_motor_driver(
+    input clk,
     input rst,
     input dir,
-    input clk,
     input en,
     output reg [3:0] signal
     );
     
-    // local parameters that hold the values of
-    // each of the states. This way the states
-    // can be referenced by name.
-    localparam sig4 = 3'b001;
-    localparam sig3 = 3'b011;
-    localparam sig2 = 3'b010;
-    localparam sig1 = 3'b110;
-    localparam sig0 = 3'b000;
+    parameter sig4 = 3'b001;
+    parameter sig3 = 3'b011;
+    parameter sig2 = 3'b010;
+    parameter sig1 = 3'b110;
+    parameter sig0 = 3'b000;
     
-    // register values to hold the values
-    // of the present and next states. 
     reg [2:0] present_state, next_state;
     
-    // run when the present state, direction
-    // or enable signals change.
-    always @ (present_state, dir, en)
-    begin
-        // Based on the present state
-        // do something.
-        case(present_state)
-        // If the state is sig4, the state where
-        // the fourth signal is held high. 
-        sig4:
-        begin
-            // If direction is 0 and enable is high
-            // the next state is sig3. If direction
-            // is high and enable is high
-            // next state is sig1. If enable is low
-            // next state is sig0.
-            if (dir == 1'b0 && en == 1'b1)
-                next_state = sig3;
-            else if (dir == 1'b1 && en == 1'b1)
-                next_state = sig1;
-            else 
-                next_state = sig0;
-        end  
-        sig3:
-        begin
-            // If direction is 0 and enable is high
-            // the next state is sig2. If direction
-            // is high and enable is high
-            // next state is sig4. If enable is low
-            // next state is sig0.
-            if (dir == 1'b0&& en == 1'b1)
-                next_state = sig2;
-            else if (dir == 1'b1 && en == 1'b1)
-                next_state = sig4;
-            else 
-                next_state = sig0;
-        end 
-        sig2:
-        begin
-            // If direction is 0 and enable is high
-            // the next state is sig1. If direction
-            // is high and enable is high
-            // next state is sig3. If enable is low
-            // next state is sig0.
-            if (dir == 1'b0&& en == 1'b1)
-                next_state = sig1;
-            else if (dir == 1'b1 && en == 1'b1)
-                next_state = sig3;
-            else 
-                next_state = sig0;
-        end 
-        sig1:
-        begin
-            // If direction is 0 and enable is high
-            // the next state is sig4. If direction
-            // is high and enable is high
-            // next state is sig2. If enable is low
-            // next state is sig0.
-            if (dir == 1'b0&& en == 1'b1)
-                next_state = sig4;
-            else if (dir == 1'b1 && en == 1'b1)
-                next_state = sig2;
-            else 
-                next_state = sig0;
-        end
-        sig0:
-        begin
-            // If enable is high
-            // the next state is sig1. 
-            // If enable is low
-            // next state is sig0.
-            if (en == 1'b1)
-                next_state = sig1;
-            else 
-                next_state = sig0;
-        end
-        default:
-            next_state = sig0; 
-        endcase
-    end 
-    
-    // State register that passes the next
-    // state value to the present state 
-    // on the positive edge of clock
-    // or reset. 
-    always @ (posedge clk, posedge rst)
-    begin
+    always @ (posedge clk, posedge rst) begin
         if (rst == 1'b1)
             present_state = sig0;
         else 
             present_state = next_state;
     end
     
-    // Output Logic
-    // Depending on the state
-    // output signal has a different
-    // value.     
-    always @ (posedge clk)
-    begin
+    always @ (posedge clk) begin
         if (present_state == sig4)
             signal = 4'b1000;
         else if (present_state == sig3)
@@ -245,5 +280,50 @@ module pmod_step_driver(
             signal = 4'b0001;
         else
             signal = 4'b0000;
+    end
+    
+    always @* begin
+        case(present_state)
+            sig4: begin
+                if (dir == 1'b0 && en == 1'b1)
+                    next_state = sig3;
+                else if (dir == 1'b1 && en == 1'b1)
+                    next_state = sig1;
+                else 
+                    next_state = sig0;
+            end  
+            sig3: begin
+                if (dir == 1'b0&& en == 1'b1)
+                    next_state = sig2;
+                else if (dir == 1'b1 && en == 1'b1)
+                    next_state = sig4;
+                else 
+                    next_state = sig0;
+            end
+            sig2: begin
+                if (dir == 1'b0&& en == 1'b1)
+                    next_state = sig1;
+                else if (dir == 1'b1 && en == 1'b1)
+                    next_state = sig3;
+                else 
+                    next_state = sig0;
+            end 
+            sig1: begin
+                if (dir == 1'b0&& en == 1'b1)
+                    next_state = sig4;
+                else if (dir == 1'b1 && en == 1'b1)
+                    next_state = sig2;
+                else 
+                    next_state = sig0;
+            end
+            sig0: begin
+                if (en == 1'b1)
+                    next_state = sig1;
+                else 
+                    next_state = sig0;
+            end
+            default:
+                next_state = sig0; 
+        endcase
     end
 endmodule
