@@ -1,20 +1,42 @@
 // MG-996R嚙踝蕭嚙璀嚙踝蕭嚙瘤
-module top (clk, rst, signal, signal2);
-    input clk;
-    input rst;
+module Server_top (clk, rst, runtime, dir, signal, signal2);
+		input clk, rst, dir;
+		input reg [3:0] runtime;
     output signal;
     output signal2;
-    Servo_Motor_PWM_Gen Ser_1(clk, rst, 2'b10, signal, signal2);
+		reg [3:0] counter, next_counter;
+
+    clock_divider #(.n(27)) clock_div( .clk(clk), .clk_div(clk_27));
+
+		always @(posedge clk_27, posedge rst) begin
+			if (rst) begin
+				counter <= 4'd0;
+				en = 0;
+			end else begin
+				if (counter >= runtime) begin
+					counter <= 4'd0;
+					en <= 0;
+				end else begin	
+					counter <= next_counter;
+					en <= 1;
+				end
+			end
+		end
+
+		always @(*) begin
+			next_counter = counter + 1;
+		end
+
+    Servo_Motor Ser(.clk(clk), .rst(rst), .en(en) .dir(dir), .signal(signal), .signal2(signal2));
 endmodule
 
 
-module Servo_Motor_PWM_Gen (clk, rst, dir, signal, signal2);
-    input clk, rst;
-	input [1:0] dir;
+module Servo_Motor (clk, rst, en, dir, signal, signal2);
+  input clk, rst, en, dir;
 	output reg signal;
 	output reg signal2;
 	reg [29:0] count, count2;
-	parameter POS = 30'd10_0000, NEG = 30'd20_0000, STOP = 30'd15_0000, WAVELENGTH = 30'd200_0000;
+	parameter POS = 30'd15_0000, NEG = 30'd15_7000, STOP = 30'd15_0000, WAVELENGTH = 30'd200_0000;
 	reg [29:0] dir_count, dir_count2;
 	
 	always @ (posedge clk) begin
