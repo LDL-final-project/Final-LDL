@@ -26,31 +26,29 @@ module top_container(
   screen scn (.clk(clk), .rst(rst), .color_id(_color_id),
               .vgaRed(vgaRed), .vgaGreen(vgaGreen), .vgaBlue(vgaBlue),
               .hsync(hsync), .vsync(vsync));
-  stepper_motor motorR(
-      .clk(clk),
-      .rst(rst),
-      . _wait(0),
-      .sec(r_stay),
-      .depth(r_depth),
-      .signal_out(red)
+  stepper_motor redMotor(
+        .clk(clk_19), .rst(rst),
+        .dir(dir_for_red_motor),
+        .en(en_for_red_motor),        
+        .signal(signal_out_red)
+        );    
+    
+  stepper_motor yellowMotor(
+      .clk(clk_19), .rst(rst),
+      .dir(dir_for_yellow_motor),
+      .en(en_for_yellow_motor),        
+      .signal(signal_out_yellow)
   );
-  stepper_motor motorY(
-      .clk(clk),
-      .rst(rst),
-      . _wait(r_depth + r_stay + r_depth),
-      .sec(y_stay),
-      .depth(y_depth),
-      .signal_out(yellow)
+  stepper_motor BlueMotor(
+      .clk(clk_19), .rst(rst),
+      .dir(dir_for_blue_motor),
+      .en(en_for_blue_motor),        
+      .signal(signal_out_blue)
   );
-  stepper_motor motorB(
-      .clk(clk),
-      .rst(rst),
-      . _wait(r_depth + r_stay + r_depth),
-      .sec(b_stay),
-      .depth(b_depth),
-      .signal_out(blue)
+  Server_top Ser_1(
+      .clk(clk), .rst(rst), .runtime(runtime), .dir(dir_for_car), 
+      .signal(signal), .signal2(signal2)
   );
-  Servo_Motor Ser_1(clk, rst, dir, signal, signal2);
 
   always @(*) begin
     case (state)
