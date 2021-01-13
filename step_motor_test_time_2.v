@@ -43,8 +43,9 @@ module stepper_motor(
     end
     
     stepper_motor_individual(
-        .clk(clk), .rst(rst), .color_id(0),
-        .r_time(r_time), .y_time(y_time), .b_time(b_time)
+        .clk(clk), .rst(rst),
+        .r_time(r_time), .y_time(y_time), .b_time(b_time),
+        .red(red), .yellow(yellow), .blue(blue)
     );
 endmodule
 
@@ -158,13 +159,13 @@ module stepper_motor_individual(
     end
     
     stepper_motor_driver motorr(
-        .clk(clk_19), .rst(rst), . en(_en_r), .dir(_dir), .signal_out(red)
+        .clk(clk_19), .rst(rst), . en(_en_r), .dir(_dir), .signal(red)
     );
     stepper_motor_driver motory(
-        .clk(clk_19), .rst(rst), . en(_en_y), .dir(_dir), .signal_out(yellow)
+        .clk(clk_19), .rst(rst), . en(_en_y), .dir(_dir), .signal(yellow)
     );
     stepper_motor_driver motorb(
-        .clk(clk_19), .rst(rst), . en(_en_b), .dir(_dir), .signal_out(blue)
+        .clk(clk_19), .rst(rst), . en(_en_b), .dir(_dir), .signal(blue)
     );
     
 endmodule
