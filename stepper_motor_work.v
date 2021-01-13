@@ -1,18 +1,3 @@
-module top(
-    input clk,
-    input rst,
-    output [3:0] red,
-    output [3:0] yellow,
-    output [3:0] blue,
-    output wire [2:0] led
-);
-    
-    stepper_motor step_mt(
-        .clk(clk), .rst(rst), .color_id(0),
-        .red(red), .yellow(yellow), .blue(blue), .led(led)
-    );
-endmodule
-
 module stepper_motor(
     input clk,
     input rst,
@@ -23,39 +8,12 @@ module stepper_motor(
     output wire [2:0] led
 );
     wire clk_cnt;
-    reg [9:0] r_time, y_time, b_time;
-    reg [9:0] next_r_time, next_y_time, next_b_time;
-    
-//    always@(posedge clk, posedge rst) begin
-//       if(rst) begin
-//            r_time <= 10'b0;
-//            y_time <= 10'd8;
-//            b_time <= 10'b0;
-//        end
-//        else begin
-//            r_time <= next_r_time;
-//            y_time <= next_y_time;
-//            b_time <= next_b_time;
-//        end
-//    end 
-//    always@* begin
-//        case(color_id)
-//            4'd0: begin
-//                next_r_time = 1;
-//                next_y_time = 9;
-//                next_b_time = 9;
-//            end
-//            default: begin
-//                next_r_time = 0;
-//                next_y_time = 0;
-//                next_b_time = 0;
-//            end
-//        endcase
-//    end
+    reg [9:0] freq_for_red, freq_for_yellow, freq_for_blue;
+    reg [9:0] next_freq_for_red, next_freq_for_yellow, next_freq_for_blue;
     
     stepper_motor_individual stepp_ind(
         .clk(clk), .rst(rst),
-        .r_time(6), .y_time(1), .b_time(3),
+        .freq_for_red(6), .freq_for_yellow(1), .freq_for_blue(3),
         .red(red), .yellow(yellow), .blue(blue), .led(led)
     );
 endmodule
@@ -63,30 +21,30 @@ endmodule
 module stepper_motor_individual(
     input clk,
     input rst,
-    input [9:0] r_time,
-    input [9:0] y_time,
-    input [9:0] b_time,
+    input [9:0] freq_for_red,
+    input [9:0] freq_for_yellow,
+    input [9:0] freq_for_blue,
     output [3:0] red,
     output [3:0] yellow,
     output [3:0] blue,
     output wire [2:0] led
 );
     parameter INIT = 3'd0;
-    parameter R_drop = 3'd1;
+    parameter RED = 3'd1;
     parameter RtoY = 3'd2;
-    parameter Y_drop = 3'd3;
+    parameter YELLOW = 3'd3;
     parameter YtoB = 3'd4;
-    parameter B_drop = 3'd5;
+    parameter BLUE = 3'd5;
     parameter BtoR = 3'd6;
     
     parameter depth = 3'd7;
-    parameter move = 3'd2;
+    parameter car_move_time = 3'd2;
     
     wire clk_19, clk_cnt;
     reg [2:0] state, next_state;
     reg [3:0] count_sec, next_count_sec;
     reg [9:0] count_rnd, next_count_rnd;
-    reg en_r, en_y, en_b, dir;
+    reg en_for_red, en_for_yellow, en_for_blue, dir;
     
     clock_divider #(.n(19)) clk19( .clk(clk), .clk_div(clk_19));
     clock_divider #(.n(27)) clkcnt( .clk(clk), .clk_div(clk_cnt));
@@ -115,20 +73,20 @@ module stepper_motor_individual(
     assign led = state;
     
     always@* begin
-        en_r = 1'b0;
-        en_y = 1'b0;
-        en_b = 1'b0;
+        en_for_red = 1'b0;
+        en_for_yellow = 1'b0;
+        en_for_blue = 1'b0;
         next_state = state;
         next_count_sec = count_sec;
         next_count_rnd = count_rnd;
         case(state)
             INIT: begin
-                next_state = R_drop;
+                next_state = RED;
                 next_count_sec = 4'd0;
                 next_count_rnd = 10'd0;
             end
-            R_drop: begin
-                if (count_rnd == r_time) begin
+            RED: begin
+                if (count_rnd == freq_for_red) begin
                     next_state = RtoY;
                     next_count_rnd = 10'd0;
                     next_count_sec = 4'd0;
@@ -136,39 +94,39 @@ module stepper_motor_individual(
                     next_count_sec = (count_sec < depth*2) ? count_sec + 4'd1 : 4'd0;
                     if (count_sec == depth*2) next_count_rnd = count_rnd + 10'b1;
                 end
-                en_r = 1'b1;
+                en_for_red = 1'b1;
             end
             RtoY: begin
-                next_state = (count_sec < move) ? RtoY : Y_drop;
-                next_count_sec = (count_sec < move) ? count_sec + 1'b1 : 4'd0;
+                next_state = (count_sec < car_move_time) ? RtoY : YELLOW;
+                next_count_sec = (count_sec < car_move_time) ? count_sec + 1'b1 : 4'd0;
             end
-            Y_drop: begin
-                if (count_rnd == y_time) begin
+            YELLOW: begin
+                if (count_rnd == freq_for_yellow) begin
                     next_state = YtoB;
                     next_count_rnd = 10'b0;
                 end else begin
                     next_count_sec = (count_sec < depth*2) ? count_sec + 4'b1 : 4'd0;
                     if (count_sec == depth*2) next_count_rnd = count_rnd + 10'b1;
                 end
-                en_y = 1'b1;
+                en_for_yellow = 1'b1;
             end
             YtoB: begin
-                next_state = (count_sec < move) ? YtoB : B_drop;
-                next_count_sec = (count_sec < move) ? count_sec + 1'b1 : 4'd0;
+                next_state = (count_sec < car_move_time) ? YtoB : BLUE;
+                next_count_sec = (count_sec < car_move_time) ? count_sec + 1'b1 : 4'd0;
             end
-            B_drop: begin
-                if (count_rnd == b_time) begin
+            BLUE: begin
+                if (count_rnd == freq_for_blue) begin
                     next_state = BtoR;
                     next_count_rnd = 10'b0;
                 end else begin
                     next_count_sec = (count_sec < depth*2) ? count_sec + 4'b1 : 4'd0;
                     if (count_sec == depth*2) next_count_rnd = count_rnd + 10'b1;
                 end
-                en_b = 1'b1;
+                en_for_blue = 1'b1;
             end
             BtoR: begin
-                next_state = (count_sec < move) ? BtoR : INIT;
-                next_count_sec = (count_sec < move) ? count_sec + 1 : 4'd0;
+                next_state = (count_sec < car_move_time) ? BtoR : INIT;
+                next_count_sec = (count_sec < car_move_time) ? count_sec + 1 : 4'd0;
             end
             default: begin
                 next_state = INIT;
@@ -177,13 +135,13 @@ module stepper_motor_individual(
     end
     
     stepper_motor_driver motorr(
-        .clk(clk_19), .rst(rst), . en(en_r), .dir(dir), .signal(red)
+        .clk(clk_19), .rst(rst), . en(en_for_red), .dir(dir), .signal(red)
     );
     stepper_motor_driver motory(
-        .clk(clk_19), .rst(rst), . en(en_y), .dir(dir), .signal(yellow)
+        .clk(clk_19), .rst(rst), . en(en_for_yellow), .dir(dir), .signal(yellow)
     );
     stepper_motor_driver motorb(
-        .clk(clk_19), .rst(rst), . en(en_b), .dir(dir), .signal(blue)
+        .clk(clk_19), .rst(rst), . en(en_for_blue), .dir(dir), .signal(blue)
     );
     
 endmodule
