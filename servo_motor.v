@@ -5,7 +5,7 @@ module controll_car(
     output signal_right
 );
     
-    controll_car servo(
+    servo_motor servo(
         .clk(clk),
         .rst(rst),
         .location_0(5),

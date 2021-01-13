@@ -21,11 +21,11 @@ module controll_car (input clk, input rst, output signal, output signal2);
             dir = 2'b01;
     end
 
-    Servo_Motor_PWM_Gen Ser_1(clk, rst, dir, signal, signal2);
+    Servo_Motor Ser_1(clk, rst, dir, signal, signal2);
 
 endmodule
 
-module Servo_Motor_PWM_Gen (clk, rst, dir, signal, signal2);
+module Servo_Motor (clk, rst, dir, signal, signal2);
     input clk, rst;
 	input [1:0] dir;
 	output reg signal;
