@@ -5,7 +5,6 @@ module top(
     output [3:0] yellow,
     output [3:0] blue
 );
-    wire color_id;
     
     stepper_motor step_mt(
         .clk(clk), .rst(rst), .color_id(0),
@@ -25,18 +24,23 @@ module stepper_motor(
     reg [9:0] r_time, y_time, b_time;
     reg [9:0] next_r_time, next_y_time, next_b_time;
     
-    clock_divider #(.n(27)) clkcnt( .clk(clk), .clk_div(clk_cnt));
-    
-    always ＠（posedge clk, posedge rst) begin
-        r_time <= next_r_time;
-        y_time <= next_y_time;
-        b_time <= next_b_time;
+    always@(posedge clk, posedge rst) begin
+       if(rst) begin
+            r_time <= 4'b0;
+            y_time <= 4'b0;
+            b_time <= 4'b0;
+        end
+        else begin
+            r_time <= next_r_time;
+            y_time <= next_y_time;
+            b_time <= next_b_time;
+        end
     end 
     always@* begin
         case(color_id)
             4'd0: begin
                 next_r_time = 5;
-                next_y_time = 7;
+                next_y_time = 9;
                 next_b_time = 9;
             end
             default: begin
@@ -76,7 +80,6 @@ module stepper_motor_individual(
     parameter move = 3'd2;
     
     wire clk_19, clk_cnt;
-    wire _en_r, _en_y, _en_b, _dir;
     reg [2:0] state, next_state;
     reg [3:0] count_sec, next_count_sec;
     reg [9:0] count_rnd, next_count_rnd;
@@ -84,11 +87,6 @@ module stepper_motor_individual(
     
     clock_divider #(.n(19)) clk19( .clk(clk), .clk_div(clk_19));
     clock_divider #(.n(27)) clkcnt( .clk(clk), .clk_div(clk_cnt));
-    
-    //assign _en_r = en_r;
-    //assign _en_y = en_y;
-    //assign _en_b = en_b;
-    //assign _dir = dir;
     
     always@(posedge clk_cnt, posedge rst) begin
         if(rst)
@@ -119,6 +117,7 @@ module stepper_motor_individual(
         en_r = 1'b0;
         en_y = 1'b0;
         en_b = 1'b0;
+        next_state = state;
         next_count_sec = count_sec;
         next_count_rnd = count_rnd;
         case(state)
@@ -129,37 +128,31 @@ module stepper_motor_individual(
             end
             R_drop: begin
                 next_state = (count_rnd < r_time) ? R_drop : RtoY;
-                next_count_sec = (count_sec < depth*2 - 1) ? count_sec + 1 : 4'd0;
-                if (count_sec == depth*2 - 1)
+                next_count_sec = (count_sec < depth*2) ? count_sec + 1'b1 : 4'd0;
+                if (count_sec < depth*2)
                     next_count_rnd = (count_rnd < r_time) ? count_rnd + 1'b1 : 10'd0;
-                else
-                    next_count_rnd = count_rnd;
                 en_r = 1'b1;
             end
             RtoY: begin
                 next_state = (count_sec < move) ? RtoY : Y_drop;
-                next_count_sec = (count_sec < move) ? count_sec + 1 : 4'd0;
+                next_count_sec = (count_sec < move) ? count_sec + 1'b1 : 4'd0;
             end
             Y_drop: begin
                 next_state = (count_rnd < y_time) ? Y_drop : YtoB;
-                next_count_sec = (count_sec < depth*2 - 1) ? count_sec + 1 : 4'd0;
-                if(count_sec == depth*2 - 1)
+                next_count_sec = (count_sec < depth*2) ? count_sec + 1'b1 : 4'd0;
+                if(count_sec < depth*2)
                     next_count_rnd = (count_rnd < y_time) ? count_rnd + 1'b1 : 10'd0;
-                else
-                    next_count_rnd = count_rnd;
                 en_y = 1'b1;
             end
             YtoB: begin
                 next_state = (count_sec < move) ? YtoB : B_drop;
-                next_count_sec = (count_sec < move) ? count_sec + 1 : 4'd0;
+                next_count_sec = (count_sec < move) ? count_sec + 1'b1 : 4'd0;
             end
             B_drop: begin
                 next_state = (count_rnd < b_time) ? B_drop : BtoR;
-                next_count_sec = (count_sec < depth*2 - 1) ? count_sec + 1 : 4'd0;
-                if(count_sec == depth*2 - 1)
+                next_count_sec = (count_sec < depth*2) ? count_sec + 1'b1 : 4'd0;
+                if(count_sec < depth*2)
                     next_count_rnd = (count_rnd < b_time) ? count_rnd + 1'b1 : 10'd0;
-                else
-                    next_count_rnd = count_rnd;
                 en_b = 1'b1;
             end
             BtoR: begin
