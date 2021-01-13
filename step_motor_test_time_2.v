@@ -83,7 +83,7 @@ module stepper_motor_individual(
     assign _en_r = en_r;
     assign _en_y = en_y;
     assign _en_b = en_b;
-    assign _dir = _dir;
+    assign _dir = dir;
     
     always@(posedge clk_cnt, posedge rst) begin
         if(rst)
@@ -104,6 +104,10 @@ module stepper_motor_individual(
             state = INIT;
         else
             state = next_state;
+    end
+    
+    always@* begin
+        dir = (count_sec < depth) ? 1'b0 : 1'b1;
     end
     
     always@* begin
