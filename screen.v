@@ -121,7 +121,7 @@ endmodule
 
 module screen (
   input wire clk, rst,
-  input wire[3:0] color_id,
+  input wire [3:0] color_id,
   output wire [3:0] vgaRed,
   output wire [3:0] vgaGreen,
   output wire [3:0] vgaBlue,
